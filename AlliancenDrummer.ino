@@ -5,21 +5,31 @@
   #include <avr/power.h>
 #endif
 
-// Which pin on the Arduino is connected to the NeoPixels?
-// On a Trinket or Gemma we suggest changing this to 1
 #define PIN            2
 
 // How many NeoPixels are attached to the Arduino?
 #define NUMPIXELS      240
 
 // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
-// Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
+// Note that for older NeoPixel strip you might need to change the third parameter--see the strandtest
 // example for more information on possible values.
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 bool colorWheel = false;
-int randomRed = 0;
-int randomGreen = 0;
-int randomBlue = 0;
+long colorIndex;
+
+uint32_t red = pixels.Color(255,0,0);
+uint32_t green = pixels.Color(0,255,0);
+uint32_t blue = pixels.Color(0,0,255);
+uint32_t yellow = pixels.Color(255,255,0);
+uint32_t white = pixels.Color(255,255,255);
+uint32_t pink = pixels.Color(255,0,100);
+uint32_t cyan = pixels.Color(0,255,255);
+uint32_t orange = pixels.Color(230,80,0);
+uint32_t currentColor = pixels.Color(0,0,0); 
+
+uint32_t colors[] = {red, green, blue, yellow, white, pink, cyan, orange};
+int numColors = sizeof(colors) / sizeof(colors[0]);
+
 
 void setup() {
   // This is for Trinket 5V 16MHz, you can remove these three lines if you are not using a Trinket
@@ -34,34 +44,30 @@ void setup() {
   pinMode(12, INPUT); // Input for color switch
   pinMode(9, INPUT); // Mic input
   digitalWrite(13,HIGH);
-
-  // Jordad color switch är satt till default low Sätter vi den high vid start får vi color wheel
-
-  //colorWheel = digitalRead(12); // Colorwheel can't be changed during runtime
+  colorWheel = digitalRead(12); // Colorwheel can't be changed during runtime
   
   
 }
 
 void loop(){
-//  if (colorWheel){
-//    if (digitalRead(9)){
-//      randomRed = random(1,255);
-//      randomGreen = random(1,255);
-//      randomBlue = random(1,255);
-//      for(int i=0;i<NUMPIXELS;i++){
-//      pixels.setPixelColor(i,pixels.Color(randomRed,randomGreen,randomBlue));
-//      }
-//      pixels.show();
-//      delay(100); // Replace with delayval
-//      for(int i=0;i<NUMPIXELS;i++){
-//        pixels.setPixelColor(i,pixels.Color(0,0,0));
-//      }
-//      pixels.show();
-//    }
-//
-//    
-//    
-//  }else{ // Standard mode
+ if (colorWheel){ // Color wheel mode, when started with colorwheel switch turned on.
+   if (digitalRead(9)){
+     colorIndex = random(numColors); 
+     currentColor = colors[colorIndex];
+     for(int i=0;i<NUMPIXELS;i++){
+       pixels.setPixelColor(i,currentColor);
+     }
+     pixels.show();
+     delay(100); // Replace with delayval
+     for(int i=0;i<NUMPIXELS;i++){
+       pixels.setPixelColor(i,pixels.Color(0,0,0));
+     }
+     pixels.show();
+   }
+
+   
+   
+ }else{ // Standard mode, when started with colorwheel switch turned off.
     if (digitalRead(9)){
       
       if (digitalRead(12)){
@@ -88,11 +94,5 @@ void loop(){
       }
   
     }    
-  
-  
-
-  
-
-
-
+  }
 }
